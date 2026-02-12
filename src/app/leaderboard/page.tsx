@@ -4,45 +4,28 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Trophy, Users, Shield, Medal } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 
-// Mock data - replace with actual data fetching
-const globalLeaderboard = [
-  { rank: 1, team: 'Team Alpha', score: 1500, members: 4 },
-  { rank: 2, team: 'CTF Masters', score: 1200, members: 3 },
-  { rank: 3, team: 'Byte Bandits', score: 950, members: 5 },
-  { rank: 4, team: 'Security Ninjas', score: 800, members: 2 },
-  { rank: 5, team: 'Code Warriors', score: 650, members: 4 },
-  { rank: 6, team: 'Hackers Anonymous', score: 500, members: 3 },
-  { rank: 7, team: 'Pwn Stars', score: 400, members: 2 },
-  { rank: 8, team: 'Script Kiddies', score: 300, members: 1 },
-]
-
-const categoryLeaders = {
-  WEB: [
-    { rank: 1, user: 'Alice', score: 450, solves: 12 },
-    { rank: 2, user: 'Bob', score: 380, solves: 10 },
-    { rank: 3, user: 'Charlie', score: 320, solves: 8 },
-  ],
-  CRYPTO: [
-    { rank: 1, user: 'Dave', score: 520, solves: 15 },
-    { rank: 2, user: 'Eve', score: 410, solves: 12 },
-    { rank: 3, user: 'Frank', score: 340, solves: 9 },
-  ],
-  FORENSICS: [
-    { rank: 1, user: 'Grace', score: 380, solves: 11 },
-    { rank: 2, user: 'Heidi', score: 310, solves: 8 },
-    { rank: 3, user: 'Ivan', score: 250, solves: 6 },
-  ],
+// Fetch leaderboard from API
+async function getLeaderboard() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`, {
+    next: { revalidate: 60 }
+  })
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch leaderboard')
+  }
+  
+  return res.json()
 }
 
-// Cache leaderboard data for 60 seconds
-const getCachedLeaderboard = unstable_cache(
-  async () => globalLeaderboard,
-  ['leaderboard-global'],
-  { revalidate: 60 }
-)
-
 export default async function LeaderboardPage() {
-  const globalData = await getCachedLeaderboard()
+  const leaderboardData = await getLeaderboard()
+  
+  if (!leaderboardData.success) {
+    return <div className="container py-8">Error loading leaderboard</div>
+  }
+  
+  const globalData = leaderboardData.data.global
+  const categoryLeaders = leaderboardData.data.categories
 
   return (
     <div className="container py-8">

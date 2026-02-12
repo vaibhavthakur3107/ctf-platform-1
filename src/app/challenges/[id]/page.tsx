@@ -8,35 +8,28 @@ import { Shield, Flag, Code, Download, Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
-// Mock challenge data - replace with actual data fetching
-const challenge = {
-  id: '1',
-  title: 'XOR Encryption',
-  description: `In this challenge, you'll need to decrypt a message that has been encrypted using XOR with a single-byte key.
-
-XOR encryption is a simple symmetric cipher where each byte of the plaintext is XORed with a key byte. The same operation is used to decrypt.
-
-Given: ciphertext = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
-
-Find the correct single-byte key that produces readable plaintext. The flag format is CTF{key} where key is the ASCII character of the XOR key.
-
-Hint: Look for plaintext that contains common English words and proper grammar.`,
-  category: 'CRYPTO',
-  tags: ['beginner', 'xor', 'cryptography'],
-  author: 'Admin',
-  points: 100,
-  minPoints: 50,
-  decay: 0.1,
-  solvedCount: 42,
-  fileUrl: '/files/xor-challenge.txt',
-  createdAt: '2024-01-20T10:00:00',
+// Fetch challenge data from API
+async function getChallenge(id: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/challenges/${id}`, {
+    cache: 'no-store'
+  })
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch challenge')
+  }
+  
+  return res.json()
 }
 
-export default function ChallengeDetailPage({ params }: { params: { id: string } }) {
-  const currentPoints = Math.max(
-    challenge.minPoints,
-    challenge.points * (1 - challenge.solvedCount * challenge.decay)
-  )
+export default async function ChallengeDetailPage({ params }: { params: { id: string } }) {
+  const challengeData = await getChallenge(params.id)
+  
+  if (!challengeData.success) {
+    return <div className="container py-8">Error loading challenge</div>
+  }
+  
+  const challenge = challengeData.data
+  const currentPoints = challenge.currentPoints
 
   const handleFlagSubmit = (e: React.FormEvent) => {
     e.preventDefault()

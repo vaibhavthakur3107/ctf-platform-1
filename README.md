@@ -5,9 +5,9 @@ A comprehensive, production-ready CTF (Capture The Flag) platform built with Nex
 ## Features
 
 ### Core Architecture
-- **Next.js 14** with App Router
+- **Next.js 15** with App Router
 - **Prisma ORM** with Supabase PostgreSQL
-- **NextAuth.js** with Credentials Provider
+- **Auth.js (NextAuth v5)** with Credentials Provider
 - **Supabase Storage** for challenge files
 - **Tailwind CSS** + Shadcn/UI + Framer Motion
 - **Upstash Redis** for rate limiting
@@ -179,12 +179,45 @@ CMD ["npm", "start"]
 ## Database Seeding
 
 The platform includes 30 realistic challenges across all categories:
-- **Crypto**: XOR, Base64 layers, RSA weak key
-- **Forensics**: Steganography, PCAP analysis
-- **Reverse**: Simple crackme logic
-- **Web**: Hidden inputs, LocalStorage manipulation
-- **OSINT**: Social media reconnaissance
-- **Misc**: Trivia, puzzles
+
+### Crypto (5 challenges)
+- XOR Encryption
+- Base64 Layers
+- RSA Weak Key
+- Caesar Cipher
+- AES-CBC Decryption
+
+### Web (5 challenges)
+- Hidden Input
+- LocalStorage Manipulation
+- SQL Injection 101
+- XSS Challenge
+- Broken Authentication
+
+### Forensics (5 challenges)
+- Steganography 101
+- PCAP Analysis
+- Memory Dump Analysis
+- File Carving
+- Metadata Extraction
+
+### Reverse Engineering (4 challenges)
+- Simple Crackme
+- Assembly Puzzle
+- Obfuscated JavaScript
+- Binary Exploitation
+
+### OSINT (4 challenges)
+- Social Media Recon
+- Geolocation Challenge
+- Domain Investigation
+- Email Header Analysis
+
+### Miscellaneous (7 challenges)
+- CTF Trivia
+- Logic Puzzle
+- Math Challenge
+- Coding Challenge
 
 Run the seeder:
 ```bash
@@ -199,20 +232,36 @@ npm run seed
 - `POST /api/auth/logout` - User logout
 
 ### Challenges
-- `GET /api/challenges` - List all challenges
+- `GET /api/challenges` - List all challenges (with pagination, filtering)
 - `GET /api/challenges/:id` - Get challenge details
-- `POST /api/challenges/:id/solve` - Submit flag solution
+- `POST /api/challenges/:id/solve` - Submit flag solution (with rate limiting)
+- `POST /api/challenges` - Create challenge (Admin)
+- `PUT /api/challenges/:id` - Update challenge (Admin)
+- `DELETE /api/challenges/:id` - Delete challenge (Admin)
 
 ### Teams
 - `POST /api/teams` - Create a team
-- `POST /api/teams/join` - Join a team
+- `PUT /api/teams/join` - Join a team with invite code
 - `GET /api/teams/:id` - Get team details
+- `DELETE /api/teams/:id` - Leave team
+
+### Leaderboard
+- `GET /api/leaderboard` - Get global and category leaderboards
+
+### Profile
+- `GET /api/profile` - Get user profile
+- `PUT /api/profile` - Update user profile and password
 
 ### Admin
-- `GET /api/admin/users` - List all users
+- `GET /api/admin/users` - List all users (with pagination, filtering)
 - `PUT /api/admin/users/:id` - Update user role
-- `GET /api/admin/challenges` - List all challenges
-- `POST /api/admin/challenges` - Create challenge
+- `GET /api/admin/competition` - Get competition settings
+- `PUT /api/admin/competition` - Update competition settings
+- `GET /api/admin/audit-logs` - Get audit logs
+
+### Files
+- `POST /api/upload` - Upload challenge file (Admin)
+- `DELETE /api/upload` - Delete challenge file (Admin)
 
 ## Security Considerations
 

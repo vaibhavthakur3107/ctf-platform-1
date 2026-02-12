@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma from "./prisma"
 import { compare } from "bcrypt"
 import type { NextAuthConfig } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
@@ -12,17 +13,61 @@ export const authConfig = {
     error: "/error",
   },
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, token, user }) {
       if (session.user) {
-        session.user.id = user.id
-        session.user.role = user.role
-        session.user.teamId = user.teamId
+        session.user.id = token.sub || user?.id
+        session.user.role = token.role || user?.role
+        session.user.teamId = token.teamId || user?.teamId
       }
       return session
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role
+        token.teamId = user.teamId
+      }
+      return token
+    },
   },
   providers: [
-    // Credentials provider will be added in the auth routes
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required")
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        })
+
+        if (!user) {
+          throw new Error("User not found")
+        }
+
+        const passwordMatch = await compare(credentials.password, user.passwordHash)
+
+        if (!passwordMatch) {
+          throw new Error("Invalid password")
+        }
+
+        if (user.role === 'BANNED') {
+          throw new Error("Your account has been banned")
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          teamId: user.teamId,
+        }
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -50,6 +95,10 @@ export async function authenticate(
 
     if (!passwordMatch) {
       return { success: false, error: "Invalid password" }
+    }
+
+    if (user.role === 'BANNED') {
+      return { success: false, error: "Your account has been banned" }
     }
 
     return { success: true, user }

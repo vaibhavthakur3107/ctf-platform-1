@@ -6,77 +6,27 @@ import { Input } from '@/components/ui/input'
 import { Shield, Flag, Code, Search, Filter, Trophy } from 'lucide-react'
 import Link from 'next/link'
 
-// Mock data - replace with actual data fetching
-const challenges = [
-  {
-    id: '1',
-    title: 'XOR Encryption',
-    category: 'CRYPTO',
-    points: 100,
-    minPoints: 50,
-    decay: 0.1,
-    solvedCount: 42,
-    tags: ['beginner', 'xor'],
-    author: 'Admin',
-  },
-  {
-    id: '2',
-    title: 'SQL Injection 101',
-    category: 'WEB',
-    points: 150,
-    minPoints: 75,
-    decay: 0.08,
-    solvedCount: 28,
-    tags: ['sql', 'injection'],
-    author: 'Admin',
-  },
-  {
-    id: '3',
-    title: 'Hidden Message',
-    category: 'FORENSICS',
-    points: 80,
-    minPoints: 40,
-    decay: 0.12,
-    solvedCount: 56,
-    tags: ['steganography', 'beginner'],
-    author: 'Admin',
-  },
-  {
-    id: '4',
-    title: 'Reverse Engineering Basics',
-    category: 'REVERSE_ENGINEERING',
-    points: 200,
-    minPoints: 100,
-    decay: 0.05,
-    solvedCount: 15,
-    tags: ['assembly', 'ghidra'],
-    author: 'Admin',
-  },
-  {
-    id: '5',
-    title: 'OSINT Challenge',
-    category: 'OSINT',
-    points: 120,
-    minPoints: 60,
-    decay: 0.1,
-    solvedCount: 33,
-    tags: ['social', 'metadata'],
-    author: 'Admin',
-  },
-  {
-    id: '6',
-    title: 'Misc Puzzle',
-    category: 'MISCELLANEOUS',
-    points: 90,
-    minPoints: 45,
-    decay: 0.1,
-    solvedCount: 48,
-    tags: ['puzzle', 'logic'],
-    author: 'Admin',
-  },
-]
+// Fetch challenges from API
+async function getChallenges() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/challenges`, {
+    cache: 'no-store'
+  })
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch challenges')
+  }
+  
+  return res.json()
+}
 
-export default function ChallengesPage() {
+export default async function ChallengesPage() {
+  const challengesData = await getChallenges()
+  
+  if (!challengesData.success) {
+    return <div className="container py-8">Error loading challenges</div>
+  }
+  
+  const challenges = challengesData.data
   const categories = ['ALL', 'WEB', 'CRYPTO', 'FORENSICS', 'OSINT', 'REVERSE_ENGINEERING', 'MISCELLANEOUS']
 
   return (

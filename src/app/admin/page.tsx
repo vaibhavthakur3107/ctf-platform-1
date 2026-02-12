@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,9 +12,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, Users, Flag, FileUp, FileDown, Settings, Plus, Trash2, Edit, Eye, EyeOff, Activity } from 'lucide-react'
+import { Shield, Users, Flag, FileUp, FileDown, Settings, Plus, Trash2, Edit, Eye, EyeOff, Activity, BarChart2, PieChart } from 'lucide-react'
 import { toast } from 'sonner'
 import { isAdmin } from '@/lib/auth'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+} from 'recharts'
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession({
@@ -55,6 +68,33 @@ export default function AdminDashboard() {
     { id: '1', action: 'USER_REGISTERED', user: 'Alice', timestamp: '2024-01-15T10:30:00', ip: '192.168.1.1' },
     { id: '2', action: 'CHALLENGE_CREATED', user: 'Admin', timestamp: '2024-01-20T14:15:00', ip: '192.168.1.2' },
   ])
+
+  // Chart data
+  const solvesPerHourData = [
+    { hour: '00:00', solves: 5 },
+    { hour: '02:00', solves: 3 },
+    { hour: '04:00', solves: 1 },
+    { hour: '06:00', solves: 2 },
+    { hour: '08:00', solves: 8 },
+    { hour: '10:00', solves: 12 },
+    { hour: '12:00', solves: 15 },
+    { hour: '14:00', solves: 10 },
+    { hour: '16:00', solves: 14 },
+    { hour: '18:00', solves: 9 },
+    { hour: '20:00', solves: 6 },
+    { hour: '22:00', solves: 4 },
+  ]
+
+  const categoryBreakdownData = [
+    { category: 'WEB', count: 8 },
+    { category: 'CRYPTO', count: 6 },
+    { category: 'FORENSICS', count: 5 },
+    { category: 'OSINT', count: 3 },
+    { category: 'REVERSE_ENGINEERING', count: 4 },
+    { category: 'MISCELLANEOUS', count: 4 },
+  ]
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#A4DE6C']
 
   const handleSettingsUpdate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -251,6 +291,66 @@ export default function AdminDashboard() {
                     <span>Competition Settings</span>
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Statistics Charts */}
+          <div className="grid gap-6 mt-6 md:grid-cols-2">
+            <Card className="ctf-card">
+              <CardHeader>
+                <CardTitle>Solves per Hour</CardTitle>
+                <CardDescription>Challenge solve activity</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={solvesPerHourData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="hour" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1F2937', border: 'none' }} 
+                      labelStyle={{ color: '#FFFFFF' }}
+                      itemStyle={{ color: '#FFFFFF' }}
+                    />
+                    <Legend />
+                    <Bar dataKey="solves" fill="#3B82F6" name="Solves" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="ctf-card">
+              <CardHeader>
+                <CardTitle>Category Breakdown</CardTitle>
+                <CardDescription>Challenges by category</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={categoryBreakdownData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="count"
+                      nameKey="category"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {categoryBreakdownData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1F2937', border: 'none' }} 
+                      labelStyle={{ color: '#FFFFFF' }}
+                      itemStyle={{ color: '#FFFFFF' }}
+                    />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
