@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(USER)
+  teamId        String?
+  team          Team?     @relation(fields: [teamId], references: [id])
+  createdAt     DateTime  @default(now())
+  badges        Achievement[]
+  solves        Solve[]
+  auditLogs     AuditLog[]
+  honeyTokens   HoneyToken[]
+}
+
+model Team {
+  id            String    @id @default(cuid())
+  name          String
+  inviteCode    String    @unique
+  score         Int       @default(0)
+  members       User[]
+  createdAt     DateTime  @default(now())
+}
+
+model Challenge {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  category      Category
+  tags          String[]
+  author         String
+  points        Int
+  minPoints     Int
+  decay         Float
+  flag          String
+  fileUrl       String?
+  solvedBy      Solve[]
+  createdAt     DateTime  @default(now())
+}
+
+model Solve {
+  id            String    @id @default(cuid())
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  challenge     Challenge @relation(fields: [challengeId], references: [id])
+  challengeId   String
+  timestamp     DateTime  @default(now())
+}
+
+model Achievement {
+  id            String    @id @default(cuid())
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  type          AchievementType
+  unlockedAt    DateTime  @default(now())
+}
+
+model CompetitionSettings {
+  id                    String    @id @default(cuid())
+  isPublic              Boolean   @default(false)
+  registrationDeadline   DateTime?
+  maxParticipants        Int?
+  scoreboardFreezeTime   Int?      // minutes
+  createdAt             DateTime  @default(now())
+}
+
+model AuditLog {
+  id            String    @id @default(cuid())
+  action        String
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  ipAddress     String?
+  timestamp     DateTime  @default(now())
+}
+
+model HoneyToken {
+  id            String    @id @default(cuid())
+  token         String    @unique
+  bannedUserId  String?
+  bannedUser    User?     @relation(fields: [bannedUserId], references: [id])
+  createdAt     DateTime  @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum Category {
+  WEB
+  CRYPTO
+  FORENSICS
+  OSINT
+  REVERSE_ENGINEERING
+  MISCELLANEOUS
+}
+
+enum AchievementType {
+  FIRST_BLOOD
+  SPEED_DEMON
+  COMPLETIONIST
+  CHALLENGE_MASTER
+  TEAM_PLAYER
+}
