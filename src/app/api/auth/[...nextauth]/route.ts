@@ -18,9 +18,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub!
-        session.user.role = token.role as string
-        session.user.teamId = token.teamId as string | null
+        session.user.id = token.sub
+        session.user.role = token.role
+        session.user.teamId = token.teamId
       }
       return session
     },
@@ -56,6 +56,10 @@ export const authOptions: NextAuthOptions = {
 
         if (!passwordMatch) {
           throw new Error("Invalid password")
+        }
+
+        if (user.role === 'BANNED') {
+          throw new Error("Your account has been banned")
         }
 
         return {

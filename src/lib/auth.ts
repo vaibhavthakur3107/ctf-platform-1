@@ -13,11 +13,11 @@ export const authConfig = {
     error: "/error",
   },
   callbacks: {
-    async session({ session, token, user }) {
+    async session({ session, user }) {
       if (session.user) {
-        session.user.id = token.sub || user?.id
-        session.user.role = token.role || user?.role
-        session.user.teamId = token.teamId || user?.teamId
+        session.user.id = user.id
+        session.user.role = user.role
+        session.user.teamId = user.teamId
       }
       return session
     },

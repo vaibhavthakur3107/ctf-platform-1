@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { generateInviteCode } from '@/lib/utils'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/react'
 
 // Create a team
 export async function POST(request: Request) {

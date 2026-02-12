@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/react'
 import { uploadChallengeFile, deleteChallengeFile } from '@/lib/supabase'
 import { validateFileType } from '@/lib/utils'
 import prisma from '@/lib/prisma'

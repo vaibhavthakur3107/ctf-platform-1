@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/react'
 
 // Get all users (Admin only)
 export async function GET(request: Request) {

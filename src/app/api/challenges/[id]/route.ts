@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { calculateDynamicPoints } from '@/lib/utils'
 import { limit } from '@/lib/rate-limit'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/react'
 
 // Get challenge details
 export async function GET(

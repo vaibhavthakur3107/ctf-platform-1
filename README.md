@@ -5,9 +5,9 @@ A comprehensive, production-ready CTF (Capture The Flag) platform built with Nex
 ## Features
 
 ### Core Architecture
-- **Next.js 15** with App Router
+- **Next.js 14** with App Router
 - **Prisma ORM** with Supabase PostgreSQL
-- **Auth.js (NextAuth v5)** with Credentials Provider
+- **NextAuth.js v4** with Credentials Provider
 - **Supabase Storage** for challenge files
 - **Tailwind CSS** + Shadcn/UI + Framer Motion
 - **Upstash Redis** for rate limiting
