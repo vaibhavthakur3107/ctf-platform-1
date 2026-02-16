@@ -1,0 +1,28 @@
+{
+  "name": "dexter-playz-server",
+  "version": "1.0.0",
+  "description": "Express server with Socket.io for Dexter Playz CTF Platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "@prisma/client": "^5.10.2",
+    "speakeasy": "^2.0.0",
+    "qrcode": "^1.5.3",
+    "nodemailer": "^6.9.8",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3",
+    "@types/node": "^20.11.24"
+  }
+}

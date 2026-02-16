@@ -1,0 +1,21 @@
+{
+  "name": "dexter-playz-challenge-manager",
+  "version": "1.0.0",
+  "description": "Challenge instance manager for Docker-based challenges",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.2",
+    "express": "^4.18.2",
+    "node-docker-api": "^1.3.11",
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3",
+    "@types/node": "^20.11.24"
+  }
+}
