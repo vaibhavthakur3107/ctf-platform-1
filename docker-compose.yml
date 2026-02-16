@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: dexter-playz-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dexter
+      POSTGRES_PASSWORD: dexter_secure_password_change_in_production
+      POSTGRES_DB: dexter_playz
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dexter-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dexter"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: dexter-playz-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dexter-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Socket.io Server
+  ws-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: dexter-playz-ws
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://dexter:dexter_secure_password_change_in_production@postgres:5432/dexter_playz
+      - DIRECT_URL=postgresql://dexter:dexter_secure_password_change_in_production@postgres:5432/dexter_playz
+      - NEXTAUTH_URL=http://localhost:3000
+      - WS_PORT=3001
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dexter-network
+
+  # Challenge Instance Manager (Docker-in-Docker for challenge containers)
+  challenge-manager:
+    build:
+      context: ./challenge-manager
+      dockerfile: Dockerfile
+    container_name: dexter-playz-challenges
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./challenge-data:/challenge-data
+    environment:
+      - DATABASE_URL=postgresql://dexter:dexter_secure_password_change_in_production@postgres:5432/dexter_playz
+      - INSTANCE_TIMEOUT=1200
+      - MAX_INSTANCES=50
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dexter-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dexter-playz-app
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://dexter:dexter_secure_password_change_in_production@postgres:5432/dexter_playz
+      - DIRECT_URL=postgresql://dexter:dexter_secure_password_change_in_production@postgres:5432/dexter_playz
+      - NEXTAUTH_SECRET=dexter_secret_key_change_in_production_use_openssl_rand_base64
+      - NEXTAUTH_URL=http://localhost:3000
+      - WS_URL=http://ws-server:3001
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASS=your-app-password
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ws-server:
+        condition: service_started
+    networks:
+      - dexter-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dexter-network:
+    driver: bridge

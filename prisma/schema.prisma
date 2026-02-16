@@ -9,18 +9,26 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  passwordHash  String
-  role          Role      @default(USER)
-  teamId        String?
-  team          Team?     @relation(fields: [teamId], references: [id])
-  createdAt     DateTime  @default(now())
-  badges        Achievement[]
-  solves        Solve[]
-  auditLogs     AuditLog[]
-  honeyTokens   HoneyToken[]
+  id                    String    @id @default(cuid())
+  name                  String?
+  email                 String    @unique
+  passwordHash          String
+  role                  Role      @default(USER)
+  teamId                String?
+  team                  Team?     @relation(fields: [teamId], references: [id])
+  createdAt             DateTime  @default(now())
+  badges                Achievement[]
+  solves                Solve[]
+  auditLogs             AuditLog[]
+  honeyTokens           HoneyToken[]
+  hintReveals           HintReveal[]
+  challengeInstances    ChallengeInstance[]
+  refreshTokens         RefreshToken[]
+  emailVerification     EmailVerification?
+  passwordResets        PasswordReset[]
+  twoFactorEnabled      Boolean   @default(false)
+  twoFactorSecret       String?
+  emailVerified         Boolean   @default(false)
 }
 
 model Team {
@@ -44,7 +52,11 @@ model Challenge {
   decay         Float
   flag          String
   fileUrl       String?
+  difficulty    String    @default("MEDIUM")
+  visible       Boolean   @default(true)
   solvedBy      Solve[]
+  hints         Hint[]
+  instances     ChallengeInstance[]
   createdAt     DateTime  @default(now())
 }
 
@@ -91,6 +103,85 @@ model HoneyToken {
   createdAt     DateTime  @default(now())
 }
 
+model Hint {
+  id            String    @id @default(cuid())
+  challengeId   String
+  challenge     Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  text          String
+  cost          Int
+  order         Int
+  revealedBy    HintReveal[]
+  createdAt     DateTime  @default(now())
+}
+
+model HintReveal {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  hintId        String
+  hint          Hint      @relation(fields: [hintId], references: [id])
+  timestamp     DateTime  @default(now())
+
+  @@unique([userId, hintId])
+}
+
+model Announcement {
+  id            String    @id @default(cuid())
+  title         String
+  content       String
+  priority      String    @default("INFO")
+  isPublished   Boolean   @default(false)
+  publishedBy   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ChallengeInstance {
+  id            String    @id @default(cuid())
+  challengeId   String
+  challenge     Challenge @relation(fields: [challengeId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  instanceType  String    @default("STATIC")
+  port          Int?
+  host          String?
+  containerId   String?
+  status        String    @default("RUNNING")
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+
+  @@unique([userId, challengeId])
+}
+
+model RefreshToken {
+  id            String    @id @default(cuid())
+  token         String    @unique
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+}
+
+model EmailVerification {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token         String    @unique
+  expiresAt     DateTime
+  verified      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+}
+
+model PasswordReset {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token         String    @unique
+  expiresAt     DateTime
+  used          Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+}
+
 enum Role {
   USER
   ADMIN
@@ -103,6 +194,7 @@ enum Category {
   FORENSICS
   OSINT
   REVERSE_ENGINEERING
+  BINARY_EXPLOITATION
   MISCELLANEOUS
 }
 
